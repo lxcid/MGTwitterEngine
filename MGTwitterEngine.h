@@ -13,6 +13,8 @@
 
 #import "OAToken.h"
 
+@class OAMutableURLRequest;
+
 
 @interface MGTwitterEngine : NSObject <MGTwitterParserDelegate>
 {
@@ -36,6 +38,13 @@
 	NSString *_consumerKey;
 	NSString *_consumerSecret;
 	OAToken  *_accessToken;
+///////////////////////////////////////////////////////////////////////////////
+// Stan's OAuth extension
+  
+  OAToken *_requestToken;
+  NSString *_OAuthPin;
+  
+///////////////////////////////////////////////////////////////////////////////
 	
 	// basic auth - deprecated
 	NSString *_username;
@@ -263,6 +272,26 @@
 
 - (void)setAccessToken: (OAToken *)token;
 - (OAToken *)accessToken;
+
+#pragma mark -
+#pragma mark Stan's OAuth extension methods
+
+// TODO: (stan@buuuk.com) Give credits where credits due.
+
+- (void)setRequestToken: (OAToken *)theToken;
+- (OAToken *)requestToken;
+
+- (void)setOAuthPin:(NSString *)theOAuthPin;
+- (NSString *)OAuthPin;
+
+- (NSString *)OAuthRequestToken;
+- (OAMutableURLRequest *)authorizeURLRequest;
+- (NSString *)OAuthAccessToken;
+
+- (NSString *)extractUsernameFromHTTPBody:(NSString *)theBody;
+- (BOOL)isAuthorized;
+
+#pragma mark -
 
 // XAuth login - NOTE: You MUST email Twitter with your application's OAuth key/secret to
 // get OAuth access. This will not work if you don't do this.

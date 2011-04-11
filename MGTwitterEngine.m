@@ -928,6 +928,30 @@
 				[_delegate accessTokenReceived:[parsedObjects objectAtIndex:0]
 									forRequest:identifier];
 			break;
+///////////////////////////////////////////////////////////////////////////////
+// Stan's OAuth extension
+        
+      case MGTwitterOAuthRequestTokenRequest: {
+        if ([parsedObjects count] > 0) {
+          OAToken *theRequestToken = [parsedObjects objectAtIndex:0];
+          [self setRequestToken:theRequestToken];
+          if ([self _isValidDelegateForSelector:@selector(requestTokenReceived:forRequest:)]) {
+            [_delegate requestTokenReceived:theRequestToken forRequest:identifier];
+          }
+        }
+      } break;
+      case MGTwitterOAuthAccessTokenRequest: {
+        if ([parsedObjects count] > 0) {
+          OAToken *theAccessToken = [parsedObjects objectAtIndex:0];
+          theAccessToken.verifier = [self OAuthPin];
+          [self setAccessToken:theAccessToken];
+          if ([self _isValidDelegateForSelector:@selector(accessTokenReceived:forRequest:)]) {
+            [_delegate accessTokenReceived:theAccessToken forRequest:identifier];
+          }
+        }
+      } break;
+        
+///////////////////////////////////////////////////////////////////////////////
         default:
             break;
     }
@@ -2121,6 +2145,169 @@
 - (OAToken *)accessToken{
 	return _accessToken;
 }
+
+#pragma mark -
+#pragma mark Stan's OAuth extension methods
+
+- (void)setRequestToken:(OAToken *)theToken {
+  [_requestToken autorelease];
+  _requestToken = [theToken retain];
+}
+
+- (OAToken *)requestToken {
+  return _requestToken;
+}
+
+- (void)setOAuthPin:(NSString *)theOAuthPin {
+  [_OAuthPin autorelease];
+  _OAuthPin = [theOAuthPin retain];
+  
+  [[self requestToken] setVerifier:theOAuthPin];
+  [[self accessToken] setVerifier:theOAuthPin];
+}
+
+- (NSString *)OAuthPin {
+  return _OAuthPin;
+}
+
+- (NSString *)OAuthRequestToken {
+  OAConsumer *theConsumer = [[[OAConsumer alloc] initWithKey:[self consumerKey] secret:[self consumerSecret]] autorelease];
+  
+  OAMutableURLRequest *theURLRequest = [[[OAMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://api.twitter.com/oauth/request_token"]
+                                                                        consumer:theConsumer
+                                                                           token:nil
+                                                                           realm:nil
+                                                               signatureProvider:nil] autorelease];
+  [theURLRequest setHTTPMethod:@"POST"];
+  
+  MGTwitterHTTPURLConnection *theConnection = [[[MGTwitterHTTPURLConnection alloc] initWithRequest:theURLRequest
+                                                                                          delegate:self
+                                                                                       requestType:MGTwitterOAuthRequestTokenRequest
+                                                                                      responseType:MGTwitterOAuthToken] autorelease];
+  if (theConnection) {
+    [_connections setObject:theConnection forKey:[theConnection identifier]];
+  } else {
+    return nil;
+  }
+  
+  if ([self _isValidDelegateForSelector:@selector(connectionStarted:)]) {
+    [_delegate connectionStarted:[theConnection identifier]];
+  }
+  
+  return [theConnection identifier];
+}
+
+- (OAMutableURLRequest *)authorizeURLRequest {
+  OAToken *theRequestToken = [self requestToken];
+  
+  // If is not valid...
+  if (![theRequestToken isValid]) {
+    return nil;
+  }
+  
+  OAConsumer *theConsumer = [[[OAConsumer alloc] initWithKey:[self consumerKey] secret:[self consumerSecret]] autorelease];
+  
+  OAMutableURLRequest *theURLRequest = [[[OAMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://api.twitter.com/oauth/authorize"]
+                                                                        consumer:theConsumer
+                                                                           token:theRequestToken
+                                                                           realm:nil
+                                                               signatureProvider:nil] autorelease];
+  
+  [theURLRequest setParameters:[NSArray arrayWithObject:[[[OARequestParameter alloc] initWithName:@"oauth_token"
+                                                                                            value:theRequestToken.key] autorelease]]];
+  
+  return theURLRequest;
+}
+
+- (NSString *)OAuthAccessToken {
+  OAToken *theRequestToken = [self requestToken];
+  
+  // If is not valid or does not have verifier...
+  if ((![theRequestToken isValid]) || ([[theRequestToken verifier] length] == 0)) {
+    return nil;
+  }
+  
+  OAConsumer *theConsumer = [[[OAConsumer alloc] initWithKey:[self consumerKey] secret:[self consumerSecret]] autorelease];
+  
+  OAMutableURLRequest *theURLRequest = [[[OAMutableURLRequest alloc] initWithURL:[NSURL URLWithString:@"https://api.twitter.com/oauth/access_token"]
+                                                                        consumer:theConsumer
+                                                                           token:theRequestToken
+                                                                           realm:nil
+                                                               signatureProvider:nil] autorelease];
+  [theURLRequest setHTTPMethod:@"POST"];
+  
+  MGTwitterHTTPURLConnection *theConnection = [[[MGTwitterHTTPURLConnection alloc] initWithRequest:theURLRequest
+                                                                                          delegate:self
+                                                                                       requestType:MGTwitterOAuthAccessTokenRequest
+                                                                                      responseType:MGTwitterOAuthToken] autorelease];
+  if (theConnection) {
+    [_connections setObject:theConnection forKey:[theConnection identifier]];
+  } else {
+    return nil;
+  }
+  
+  if ([self _isValidDelegateForSelector:@selector(connectionStarted:)]) {
+    [_delegate connectionStarted:[theConnection identifier]];
+  }
+  
+  return [theConnection identifier];
+}
+
+- (NSString *)extractUsernameFromHTTPBody:(NSString *)theBody {
+  if (!theBody) {
+    return nil;
+  }
+  
+  NSArray *theTuples = [theBody componentsSeparatedByString:@"&"];
+  if (theTuples.count < 1) {
+    return nil;
+  }
+  
+  for (NSString *theTuple in theTuples) {
+    NSArray *theKeyValueArray = [theTuple componentsSeparatedByString:@"="];
+    
+    if (theKeyValueArray.count == 2) {
+      NSString *theKey = [theKeyValueArray objectAtIndex:0];
+      //NSString *theValue = [theKeyValueArray objectAtIndex:1];
+      
+      if ([theKey isEqualToString:@"screen_name"]) {
+        // Retrieve the value only after the desired key.
+        NSString *theValue = [theKeyValueArray objectAtIndex:1];
+        return theValue;
+      }
+    }
+  }
+  
+  return nil;
+}
+
+- (BOOL)isAuthorized {
+  if ([[self accessToken] isValid]) {
+    return YES;
+  }
+  
+  // First, check for cached credentials
+  NSString *theAccessTokenString = nil;
+  if ([_delegate respondsToSelector:@selector(cachedTwitterOAuthDataForUsername:)]) {
+    theAccessTokenString = [((id) _delegate) cachedTwitterOAuthDataForUsername:[self username]];
+  }
+  
+  if (theAccessTokenString.length) {
+    OAToken *theOAToken = [[[OAToken alloc] initWithHTTPResponseBody:theAccessTokenString] autorelease];
+    [self setAccessToken:theOAToken];
+    NSString *theUsername = [self extractUsernameFromHTTPBody:theAccessTokenString];
+    [self setUsername:theUsername];
+    if ([[self accessToken] isValid]) {
+      return YES;
+    }
+  }
+  
+  // No access token found. Create a new empty one.
+  [self setAccessToken:[[[OAToken alloc] initWithKey:nil secret:nil] autorelease]];
+  return NO;
+}
+
+#pragma mark -
 
 - (NSString *)getXAuthAccessTokenForUsername:(NSString *)username 
 									password:(NSString *)password{

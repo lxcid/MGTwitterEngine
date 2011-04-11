@@ -54,6 +54,14 @@ typedef enum _MGTwitterRequestType {
 	MGTwitterSearchCurrentTrendsRequest, // getting the current trends
 #endif
 	MGTwitterOAuthTokenRequest,
+///////////////////////////////////////////////////////////////////////////////
+// Stan's OAuth extension
+  
+  MGTwitterOAuthRequestTokenRequest, // Request Token
+  MGTwitterOAuthAccessTokenRequest, // Access Token
+  //MGTwitterOAuthAuthorizeRequest, // Authorize
+  
+///////////////////////////////////////////////////////////////////////////////
 } MGTwitterRequestType;
 
 typedef enum _MGTwitterResponseType {
@@ -72,6 +80,14 @@ typedef enum _MGTwitterResponseType {
 	MGTwitterSocialGraph		= 10,
 	MGTwitterOAuthToken         = 11,
 	MGTwitterUserLists          = 12,
+  ///////////////////////////////////////////////////////////////////////////////
+  // Stan's OAuth extension
+  
+  //MGTwitterOAuthRequestToken = ??, // Request Token, use MGTwitterOAuthToken
+  //MGTwitterOAuthAccessToken = ??, // Access Token, use MGTwitterOAuthToken
+  //MGTwitterOAuthAuthorize = ??, // Authorize, for UIWebView
+  
+  ///////////////////////////////////////////////////////////////////////////////
 } MGTwitterResponseType;
 
 // This key is added to each tweet or direct message returned,
