@@ -190,6 +190,7 @@
 		AB1055BF134DAF5A00F22393 /* NSData+Base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSData+Base64.h"; path = "../NSData+Base64.h"; sourceTree = SOURCE_ROOT; };
 		AB1055C0134DAF5A00F22393 /* NSData+Base64.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSData+Base64.m"; path = "../NSData+Base64.m"; sourceTree = SOURCE_ROOT; };
 		AB105624134DAFD800F22393 /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
+		ABBE5C8C13725A4600ED0D35 /* TwitterOAuthController.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = TwitterOAuthController.bundle; path = ../TwitterOAuthController.bundle; sourceTree = SOURCE_ROOT; };
 		ABC6CC6A136ABF2100573969 /* TwitterOAuthController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TwitterOAuthController.h; path = ../TwitterOAuthController.h; sourceTree = SOURCE_ROOT; };
 		ABC6CC6B136ABF2100573969 /* TwitterOAuthController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TwitterOAuthController.m; path = ../TwitterOAuthController.m; sourceTree = SOURCE_ROOT; };
 		D2AAC07E0554694100DB518D /* libMGTwitterEngineFramework.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libMGTwitterEngineFramework.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -444,6 +445,7 @@
 		ABC6CC69136ABF0B00573969 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				ABBE5C8C13725A4600ED0D35 /* TwitterOAuthController.bundle */,
 				ABC6CC6A136ABF2100573969 /* TwitterOAuthController.h */,
 				ABC6CC6B136ABF2100573969 /* TwitterOAuthController.m */,
 			);

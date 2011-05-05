@@ -11,7 +11,7 @@
 #import "MGTwitterEngine.h"
 #import "OAMutableURLRequest.h"
 
-static NSString* const kTwitterLoadingBackgroundImage = @"twitter_load.png";
+static NSString* const kTwitterLoadingBackgroundImage = @"images/twitter_load.png";
 
 
 @interface NSString (TwitterOAuth)
