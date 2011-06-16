@@ -623,6 +623,7 @@
 				HEADER_SEARCH_PATHS = /usr/include/libxml2;
 				INSTALL_PATH = /usr/local/lib;
 				PRODUCT_NAME = MGTwitterEngineFramework;
+				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
@@ -638,6 +639,7 @@
 				HEADER_SEARCH_PATHS = /usr/include/libxml2;
 				INSTALL_PATH = /usr/local/lib;
 				PRODUCT_NAME = MGTwitterEngineFramework;
+				SKIP_INSTALL = YES;
 			};
 			name = Release;
 		};
